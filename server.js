@@ -1,4 +1,5 @@
 const fs = require('fs');
+const http  =require('http')
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
 const express = require('express');
@@ -18,6 +19,7 @@ app.use(cors(), express.json(), expressJwt({
 
 const typeDefs = fs.readFileSync('./schema.graphql', {encoding: 'utf8'});
 const resolvers = require('./resolvers');
+const { createServer } = require('tls');
 
 function context({req}) {
   if (req && req.user) {
@@ -40,4 +42,6 @@ app.post('/login', (req, res) => {
   res.send({token});
 });
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+const httpServer = http.createServer(app);
+apolloServer.installSubscriptionHandlers(httpServer)
+httpServer.listen(port, () => console.log(`Server started on port ${port}`));
